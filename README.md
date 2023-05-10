@@ -28,3 +28,4 @@ Repo containing maperitive mrules files for displaying OpenStreetmaps data diffe
 
 ## Reference
 [Lightburn Layer Color Codes](LightBurn_Layer_colors.md) for importing SVG into Lightburn later
+[Video](https://youtu.be/5GSa7g4568M) of using the rules in this repo
