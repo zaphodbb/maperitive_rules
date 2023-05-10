@@ -24,3 +24,7 @@ Repo containing maperitive mrules files for displaying OpenStreetmaps data diffe
 ## LaserNoText.mrules
 * same as Laser but do not include names
 
+## Changelog
+
+## Reference
+[Lightburn Layer Color Codes](LightBurn_Layer_colors.md) for importing SVG into Lightburn later

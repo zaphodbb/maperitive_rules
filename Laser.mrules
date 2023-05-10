@@ -1,73 +1,216 @@
-features
-	areas
-	    water : natural=water OR natural=wetland OR waterway=riverbank OR waterway=stream OR landuse=reservoir OR waterway=river
+// Lightburn Layer Colors for SVG import:
+// Layer	Color Code
+//     0	#000000		Black
+//     1	#0000FF		Blue
+//     2	#FF0000		Red
+//     3	#00E000
+//     4	#D0D000
+//     5	#FF8000
+//     6	#00E0E0
+//     7	#FF00FF
+//     8	#B4B4B4
+//     9	#0000A0
+//    10	#A00000
+//    11	#00A000
+//    12	#A0A000
+//    13	#C08000
+//    14	#00A0FF
+//    15	#A000A0
+//    16	#808080
+//    17	#7D87B9
+//    18	#BB7784
+//    19	#4A6FE3
+//    20	#D33F6A
+//    21	8CD78C
+//    22	#F0B98D
+//    23	#F6C4E1
+//    24	#FA9ED4
+//    25	#500A78
+//    26	#B45A00
+//    27	#004754
+//    28	#86FA88
+//    29	#FFDB66
+//  Tool 1	#F36926
+//  Tool 2	#0C96D9  
+// 
+// Version 1.0
+// 2023-05-09: - Add drawing of water shoreline (rivers)
+//             - Add foot trails as Layer 4
+//             - Add bike trails as Layer 5
+//             - Move Railroad to Layer 6
 
+features
+    // Draw water areas (IE: large river banks and lakes)
+	areas
+		water : natural=water OR waterway=riverbank OR landuse=reservoir OR landuse=basin or waterway=dock
+		// campsite: tourism=camp_site
+
+    //Draw these lines
 	lines
+	    // Water lines
 		coastline : natural=coastline
 		river : waterway=river
 		stream : waterway=stream
 		canal : waterway=canal
-		dock : waterway=dock
 		drain : waterway=drain
-		reservoir: waterway=reservoir
-		railway rail : railway=rail OR railway=light_rail
-		platform : railway=platform OR public_transport=platform
-		highway primary : highway=primary OR (highway=construction AND construction=primary) OR highway=primary_link OR (highway=construction AND construction=primary_link)
-		highway secondary : highway=secondary OR (highway=construction AND construction=secondary) OR highway=secondary_link OR (highway=construction AND construction=secondary_link)
+		dock : waterway=dock
+		pier : man_made=pier
+		// Railroads
+		railway rail : railway=rail
+		railway lightrail : railway=light_rail
+		// Roads/Streets
+		highway motorway : highway=motorway OR (highway=construction AND construction=motorway)
+		highway motorway link : highway=motorway_link OR (highway=construction AND construction=motorway_link)
+		highway trunk : highway=trunk OR (highway=construction AND construction=trunk)
+		highway trunk link: highway=trunk_link OR (highway=construction AND construction=trunk_link)
+		highway primary link : highway=primary_link OR (highway=construction AND construction=primary_link)
+		highway primary : highway=primary OR (highway=construction AND construction=primary)
+		highway secondary : highway=secondary OR (highway=construction AND construction=secondary)
 		highway tertiary : highway=tertiary OR (highway=construction AND construction=tertiary)
 		highway unclassified : highway=unclassified OR (highway=construction AND construction=unclassified)
 		highway residential : highway=residential OR (highway=construction AND construction=residential)
+		highway living_street : highway=living_street OR (highway=construction AND construction=living_street)
+		highway construction : highway=construction
 		highway service : highway=service
-		pier : man_made=pier
+		highway access destination : access=destination AND highway
+		
+		// Paths
+		cycleway : highway=cycleway
 		bridge foot : bridge=yes AND (foot=yes OR highway=footway)
-		aeroway runway : aeroway=runway OR aeroway=taxiway
+		foot path major : @isOneOf(highway,pedestrian,footway,path,steps) AND (NOT trail_visibility OR @isOneOf(trail_visibility, excellent, good))
+		foot path minor : @isOneOf(highway,pedestrian,footway,path,steps) AND (trail_visibility AND NOT @isOneOf(trail_visibility, excellent, good))
+		foot path other : highway=path
+        // Runways
+		aeroway runway : aeroway=runway
+		aeroway taxiway : aeroway=taxiway
+
 
 properties
-	map-background-color	: #FFFFFF
+	map-background-color	: #FFFFF
 	map-background-opacity	: 1
 	map-sea-color : #0000FF
-	font-weight : normal
+	font-weight : bold
 	font-family : Verdana
-	text-max-width : 10
-	text-halo-width : 20%
-	text-halo-opacity : 1
+	text-max-width : 7
+	text-halo-width : 25%
+	text-halo-opacity : 0.75
 	text-align-horizontal : center
-	text-align-vertical : far
-	text-offset-vertical : -150%
-	font-stretch : 1.0
+	text-align-vertical : center
+	font-stretch : 0.9
 	map.rendering.lflp.min-buffer-space : 5
-	map.rendering.lflp.max-allowed-corner-angle : 0
-	map.rendering.lflp.max-compression : 1
+	map.rendering.lflp.max-allowed-corner-angle : 40
 
 rules
-	target : aeroway runway
-		define
-			min-zoom : 11
-			line-color : #BBBBCC
-			line-width : 11:2;15:20
-		draw : line
-	target : platform
+    // cycleway (rail to trail, etc) become layer 5 in Lightburn
+	target : cycleway*
 		define
 			min-zoom : 13
-			line-color : gray
-			line-width : 3
+			line-color : #FF8000
+			line-width : 13:2;15:2.5;18:3
+			line-style : dot
+			border-style : none
+			border-color : white
+			border-width : 100%
+			border-opacity : 0.3
+		for : tunnel=yes
+			define
+				border-style : none
+		for : bridge=yes
+			define
+				border-color : #000
+				border-opacity : 1
 		draw : line
+		draw : text
+
+
+	target : bridge foot
+	    // foot bridge goes to layer 4 in lightburn
+		define
+			min-zoom : 13
+			line-color : #D0D000
+			line-width : 7:0.6;9:1;10:1.2;12:2.5;13:3;16:5;18:6
+			border-style : solid
+			border-color : #FEFEB2 black 20%
+			border-width : 15%
+		draw : line
+		draw : text
+
+	target : foot path*
+	    // foot paths also go to layer 4 in lightburn
+		define
+			line-color : #D0D000
+			line-style : dash
+			border-style : none
+		if : *major
+			define
+				min-zoom : 14.5
+				line-width : 14.5:1;15.5:2
+		else
+			define
+				min-zoom : 15
+				line-width : 1
+		draw : line
+		draw : text
+		
+	// Draw water areas as blue (Layer 3 in Lightburn)
+	target : $featuretype(area)
+		define
+			line-style : solid
+			line-width : 1
+		if : water
+			define
+				fill-color : #0000FF
+				line-color : #0000FF
+				line-style : solid
+		elseif: campsite
+			define
+				fill-color : #FFFF00
+				line-color : #FFFF00
+				line-style : solid
+		else
+			stop
+		draw : fill
+		draw : text
+
+    // Rail stuff is heavy dashed Layer 6 in Lightburn
 	target : railway rail
 		define
 			min-zoom : 13
-			line-color : #00FF00
-			line-width : 7
+			line-style : dash
+			line-color : #00E0E0
+			line-width : 4
 		draw : line
+	target : railway*
+		define
+			min-zoom : 13
+			line-color : #00E0E0
+			line-width : 2
+		define
+			min-zoom : 15
+			text-align-horizontal : center
+			text-align-vertical : center
+		draw:text
+
+    // Highways are Black / layer1 in Lightburn
+	target : highway access*
+		define
+			min-zoom : 13
+			line-width : 13:1;15:2;18:4
+			line-style : dash
+			line-color : #000000
+		draw : line
+
 	target : highway*
 		define
 			font-size : 15:7;18:10
-			font-weight : normal
+			font-weight : bold
 
 		define
 			line-style : solid
 			line-join : round
 			line-start-cap : round
 			line-end-cap : round
+
 		if : *motorway*
 			if : *link
 				define
@@ -84,6 +227,24 @@ rules
 				max-zoom : 12
 				border-style : none
 			draw : line
+			define
+				min-zoom : 10
+				max-zoom : 20
+				font-family : Tahoma
+				text-align-horizontal : center
+				text-align-vertical : center
+				text : ref
+				font-size : 12
+				text-color : #fcfcfb
+				text-halo-width : 0
+				shape : custom
+				shape-def : p:#809bc0;pw:5;f:#809bc0;m:-10,-10;l:10,-10;a:10,10,10,10;l:-10,10;a:10,10,-10,-10;z;p:#fcfcfb;pw:2;m:-10,-10;l:10,-10;a:10,10,10,10;l:-10,10;a:10,10,-10,-10;z
+				shield-padding-left : 5
+				shield-padding-right : 5
+				shield-padding-top : 7
+				shield-padding-bottom : 7
+				shield-resize-mode : free
+		//	draw : shield
 		elseif : *trunk*
 			define
 				min-zoom : 12
@@ -115,7 +276,7 @@ rules
 			define
 				min-zoom : 13
 				max-zoom : 20
-			draw: text
+			draw : text
 		elseif : *secondary
 			define
 				min-zoom : 12
@@ -137,7 +298,7 @@ rules
 			define
 				min-zoom : 13
 				max-zoom : 20
-			draw: text
+			draw : text
 		elseif : *tertiary
 			define
 				min-zoom : 13
@@ -159,11 +320,11 @@ rules
 			define
 				min-zoom : 15
 				max-zoom : 20
-			draw: text
+			draw : text
 		elseif : *service
 			define
 				min-zoom : 13
-				line-color : 000000
+				line-color : #000000
 				line-width : 12:0.5;13:1;15:3;18:5
 			for : tunnel=yes
 				define
@@ -172,7 +333,8 @@ rules
 				define
 					border-color : #000
 			draw : line
-			draw: text
+			draw : text
+
 		elseif : $regex("(.*residential)|(.*unclassified)")
 			define
 				min-zoom : 13
@@ -194,11 +356,11 @@ rules
 			define
 				min-zoom : 15
 				max-zoom : 20
-			draw: text
+			draw : text
 		elseif : *living_street
 			define
 				min-zoom : 13
-				line-color : 000000
+				line-color : white black 25%
 				line-width : 12:1;13:1.5;15:6;18:15
 				border-style : none
 			for : tunnel=yes
@@ -211,16 +373,11 @@ rules
 			define
 				min-zoom : 15
 				max-zoom : 20
-			draw: text
+			draw : text
 		else
 			stop
 
-	target : pier
-		define
-			line-color : #000000
-			line-width : 1:1;20:8
-		draw : line
-
+    // Rivers and streams are blue
 	target : river
 		define
 			line-color : #0000FF
@@ -228,10 +385,11 @@ rules
 		draw : line
 		define
 			min-zoom:13
-			font-size:13:8;16:12
-			text-color:#0000FF
+			font-size:13:12;16:16
+			text-color:#B5D0D0
 			font-weight:normal
 		draw:text
+
 	target : stream
 		define
 			line-color : #0000FF
@@ -240,33 +398,40 @@ rules
 		define
 			min-zoom:13
 			font-size:13:8;16:12
-			text-color:#0000FF
+			text-color:#B5D0D0
 			font-weight:normal
 		draw:text
 
 	target : canal
 		define
 			min-zoom : 12
-			line-color : #0000FF
+			line-color : #B5D0D0
 			line-width : 12:1;17:8
 		draw : line
 		define
 			min-zoom:13
 			font-size:13:8;16:12
-			text-color:#0000FF
+			text-color:#B5D0D0
 			font-weight:normal
 		draw:text
 
-	target : drain
+	target: railway station
 		define
-			min-zoom : 13
-			line-color : #0000FF
-			line-width : 1
-		draw : line
+			min-zoom : 12
+			shape : square
+			line-color : #7981B0
+			fill-color : #7981B0
+			shape-size : 12:5;18:8
+		draw : shape
+		define
+			min-zoom : 14
+			font-size : 12
+			text-color : #7981B0
+			text-offset-vertical : -150%
+		draw : text
+
 	target: coastline
 		define
-			line-color : #0000FF
+			line-color : #B5D0D0
 			line-width : 2
 		draw : line
-
-
