@@ -1,38 +1,3 @@
-// Lightburn Layer Colors for SVG import:
-// Layer	Color Code
-//     0	#000000		Black
-//     1	#0000FF		Blue
-//     2	#FF0000		Red
-//     3	#00E000
-//     4	#D0D000
-//     5	#FF8000
-//     6	#00E0E0
-//     7	#FF00FF
-//     8	#B4B4B4
-//     9	#0000A0
-//    10	#A00000
-//    11	#00A000
-//    12	#A0A000
-//    13	#C08000
-//    14	#00A0FF
-//    15	#A000A0
-//    16	#808080
-//    17	#7D87B9
-//    18	#BB7784
-//    19	#4A6FE3
-//    20	#D33F6A
-//    21	8CD78C
-//    22	#F0B98D
-//    23	#F6C4E1
-//    24	#FA9ED4
-//    25	#500A78
-//    26	#B45A00
-//    27	#004754
-//    28	#86FA88
-//    29	#FFDB66
-//  Tool 1	#F36926
-//  Tool 2	#0C96D9  
-
 features
     // Draw water areas (IE: large river banks and lakes)
 	areas
@@ -69,18 +34,18 @@ features
 		highway access destination : access=destination AND highway
 		
 		// Paths
-		cycleway : highway=cycleway
-		bridge foot : bridge=yes AND (foot=yes OR highway=footway)
-		foot path major : @isOneOf(highway,pedestrian,footway,path,steps) AND (NOT trail_visibility OR @isOneOf(trail_visibility, excellent, good))
-		foot path minor : @isOneOf(highway,pedestrian,footway,path,steps) AND (trail_visibility AND NOT @isOneOf(trail_visibility, excellent, good))
-		foot path other : highway=path
+		// cycleway : highway=cycleway
+		// bridge foot : bridge=yes AND (foot=yes OR highway=footway)
+		// foot path major : @isOneOf(highway,pedestrian,footway,path,steps) AND (NOT trail_visibility OR @isOneOf(trail_visibility, excellent, good))
+		// foot path minor : @isOneOf(highway,pedestrian,footway,path,steps) AND (trail_visibility AND NOT @isOneOf(trail_visibility, excellent, good))
+		// foot path other : highway=path
         // Runways
 		aeroway runway : aeroway=runway
 		aeroway taxiway : aeroway=taxiway
 
 
 properties
-	map-background-color	: #FFFFF
+	map-background-color	: #ffffff
 	map-background-opacity	: 1
 	map-sea-color : #0000FF
 	font-weight : bold
@@ -114,7 +79,7 @@ rules
 				border-color : #000
 				border-opacity : 1
 		draw : line
-		// draw : text
+		draw : text
 
 
 	target : bridge foot
@@ -127,7 +92,7 @@ rules
 			border-color : #FEFEB2 black 20%
 			border-width : 15%
 		draw : line
-		// draw : text
+		draw : text
 
 	target : foot path*
 	    // foot paths also go to layer 4 in lightburn
@@ -144,7 +109,7 @@ rules
 				min-zoom : 15
 				line-width : 1
 		draw : line
-		// draw : text
+		draw : text
 		
 	// Draw water areas as blue (Layer 3 in Lightburn)
 	target : $featuretype(area)
@@ -164,7 +129,7 @@ rules
 		else
 			stop
 		draw : fill
-		// draw : text
+		draw : text
 
     // Rail stuff is heavy dashed Layer 6 in Lightburn
 	target : railway rail
@@ -270,7 +235,7 @@ rules
 			define
 				min-zoom : 13
 				max-zoom : 20
-			// draw : text
+			draw : text
 		elseif : *secondary
 			define
 				min-zoom : 12
@@ -292,7 +257,7 @@ rules
 			define
 				min-zoom : 13
 				max-zoom : 20
-			// draw : text
+			draw : text
 		elseif : *tertiary
 			define
 				min-zoom : 13
@@ -314,7 +279,7 @@ rules
 			define
 				min-zoom : 15
 				max-zoom : 20
-			// draw : text
+			draw : text
 		elseif : *service
 			define
 				min-zoom : 13
@@ -327,7 +292,7 @@ rules
 				define
 					border-color : #000
 			draw : line
-			// draw : text
+			draw : text
 
 		elseif : $regex("(.*residential)|(.*unclassified)")
 			define
@@ -350,7 +315,7 @@ rules
 			define
 				min-zoom : 15
 				max-zoom : 20
-			// draw : text
+			draw : text
 		elseif : *living_street
 			define
 				min-zoom : 13
@@ -367,7 +332,7 @@ rules
 			define
 				min-zoom : 15
 				max-zoom : 20
-			// draw : text
+			draw : text
 		else
 			stop
 
@@ -422,7 +387,7 @@ rules
 			font-size : 12
 			text-color : #7981B0
 			text-offset-vertical : -150%
-		// draw : text
+		draw : text
 
 	target: coastline
 		define

@@ -17,14 +17,32 @@ Repo containing maperitive mrules files for displaying OpenStreetmaps data diffe
 
 # Rules
 ## Laser.mrules
-* Only display roads, water, railroads, etc
+* Only display roads, water, railroads, trails, etc
 * No parks, buildings, etc
 * include road names
 
-## LaserNoText.mrules
-* same as Laser but do not include names
+## LaserNoTrails.mrules
+* same as Laser but do not include trails
+
+## LightBurnLayers.afpalette
+Affinity Palette file (Designer and Photo) that maps to layers in Lightburn upon import.  To import the pallette into Affinity Designer or Photo:
+1. Open Affinity Designer
+1. Ensure the "Swatches" window is enabled
+    ![Enable Affinity Swatches](/media/affinity_swatches.png?raw=true "Enable Swatches window in Affinity Designer")
+1. With swatches enabled, access the swatches panel.  NOTE: Your display could be configured completely differently than mine, finding the swatches panel is beyond the scope of this document.
+    ![Access Swatches](/media/affinity_find_swatches.png?raw=true "Access Swatches panel")
+1. In the swatches panel, drop down the 'hamburger menu' in the top right and select "Import Palette".
+    ![Import Palette](/media/affinity_import_palette.png?raw=true "Import Palette in Affinity Designer")
+1. In the Swatches Panel, use the Palette dropdown to access the newly imported palette
+    ![New Palette](/media/affinity_new_palette.png?raw=true "New Palette in Affinity Designer")
+1. Using colors from this palette in Affinity will import objects into Lightburn in the corresponding layers!
+
+NOTE: The last two colors in the palette match the "tool layers" in Lightburn.  These colors are not honored during import in the current versions of Lightburn and therefore, anything using these colors in Affinity will be mapped to the "Nearest valid color" layer in Lightburn.
 
 ## Changelog
+* Dropped LaserNoText.mrules, text is always on a different layer so easily removed in Affinity/Illustrator/Inkscape
+* Improved River/Stream handling to provide shape outlines of Rivers and Streams instead of just the main line
+* Added Affinity Palette file for Lightburn Layers
 
 ## Reference
 [Lightburn Layer Color Codes](LightBurn_Layer_colors.md) for importing SVG into Lightburn later

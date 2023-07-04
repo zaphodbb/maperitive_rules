@@ -1,48 +1,8 @@
-// Lightburn Layer Colors for SVG import:
-// Layer	Color Code
-//     0	#000000		Black
-//     1	#0000FF		Blue
-//     2	#FF0000		Red
-//     3	#00E000
-//     4	#D0D000
-//     5	#FF8000
-//     6	#00E0E0
-//     7	#FF00FF
-//     8	#B4B4B4
-//     9	#0000A0
-//    10	#A00000
-//    11	#00A000
-//    12	#A0A000
-//    13	#C08000
-//    14	#00A0FF
-//    15	#A000A0
-//    16	#808080
-//    17	#7D87B9
-//    18	#BB7784
-//    19	#4A6FE3
-//    20	#D33F6A
-//    21	8CD78C
-//    22	#F0B98D
-//    23	#F6C4E1
-//    24	#FA9ED4
-//    25	#500A78
-//    26	#B45A00
-//    27	#004754
-//    28	#86FA88
-//    29	#FFDB66
-//  Tool 1	#F36926
-//  Tool 2	#0C96D9  
-// 
-// Version 1.0
-// 2023-05-09: - Add drawing of water shoreline (rivers)
-//             - Add foot trails as Layer 4
-//             - Add bike trails as Layer 5
-//             - Move Railroad to Layer 6
-
 features
     // Draw water areas (IE: large river banks and lakes)
 	areas
-		water : natural=water OR waterway=riverbank OR landuse=reservoir OR landuse=basin or waterway=dock
+	    water: natural=water OR waterway=river
+		//water : natural=water OR waterway=riverbank OR landuse=reservoir OR landuse=basin or waterway=dock or natural=coastline
 		// campsite: tourism=camp_site
 
     //Draw these lines
@@ -71,7 +31,7 @@ features
 		highway residential : highway=residential OR (highway=construction AND construction=residential)
 		highway living_street : highway=living_street OR (highway=construction AND construction=living_street)
 		highway construction : highway=construction
-		highway service : highway=service
+		highway service : highway=service OR highway=track
 		highway access destination : access=destination AND highway
 		
 		// Paths
@@ -86,7 +46,7 @@ features
 
 
 properties
-	map-background-color	: #FFFFF
+	map-background-color	: WHITE
 	map-background-opacity	: 1
 	map-sea-color : #0000FF
 	font-weight : bold
@@ -198,7 +158,7 @@ rules
 			line-width : 13:1;15:2;18:4
 			line-style : dash
 			line-color : #000000
-		draw : line
+	//	draw : line
 
 	target : highway*
 		define
@@ -250,9 +210,9 @@ rules
 				min-zoom : 12
 				line-color : #000000
 				line-width : 11:1;13:2;15:10;18:12
-			for : tunnel=yes
-				define
-					border-style : dot
+			//for : tunnel=yes
+			//	define
+			//		border-style : dot
 			draw : line
 			define
 				min-zoom : 7
@@ -264,9 +224,9 @@ rules
 				min-zoom : 11
 				line-color : #000000
 				line-width : 11:2;12:2;15:10;18:12
-			for : tunnel=yes
-				define
-					border-style : dot
+			//for : tunnel=yes
+			//	define
+			//		border-style : dot
 			draw : line
 			define
 				min-zoom : 7
@@ -282,9 +242,9 @@ rules
 				min-zoom : 12
 				line-color : #000000
 				line-width : 10:1;11:2;13:2;15:10;18:12
-			for : tunnel=yes
-				define
-					border-style : dot
+			//for : tunnel=yes
+			//	define
+			//		border-style : dot
 			for : bridge=yes
 				define
 					border-color : #000
@@ -304,9 +264,9 @@ rules
 				min-zoom : 13
 				line-color : #000000
 				line-width : 10:1;13:2;15:10;18:12
-			for : tunnel=yes
-				define
-					border-style : dot
+			//for : tunnel=yes
+			//	define
+			//		border-style : dot
 			for : bridge=yes
 				define
 					border-color : #000
@@ -326,9 +286,9 @@ rules
 				min-zoom : 13
 				line-color : #000000
 				line-width : 12:0.5;13:1;15:3;18:5
-			for : tunnel=yes
-				define
-					border-style : dot
+			//for : tunnel=yes
+			//	define
+			//		border-style : dot
 			for : bridge=yes
 				define
 					border-color : #000
@@ -340,9 +300,9 @@ rules
 				min-zoom : 13
 				line-color : 000000
 				line-width : 12:1;13:1.5;15:6;18:15
-			for : tunnel=yes
-				define
-					border-style : dot
+			//for : tunnel=yes
+			//	define
+			//		border-style : dot
 			for : bridge=yes
 				define
 					border-color : #000
@@ -363,9 +323,9 @@ rules
 				line-color : white black 25%
 				line-width : 12:1;13:1.5;15:6;18:15
 				border-style : none
-			for : tunnel=yes
-				define
-					border-style : dot
+			//for : tunnel=yes
+			//	define
+			//		border-style : dot
 			for : bridge=yes
 				define
 					border-color : #000
