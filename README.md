@@ -27,13 +27,13 @@ Repo containing maperitive mrules files for displaying OpenStreetmaps data diffe
 ## LightBurnLayers.afpalette
 Affinity Palette file (Designer and Photo) that maps to layers in Lightburn upon import.  To import the pallette into Affinity Designer or Photo:
 1. Open Affinity Designer
-1. Ensure the "Swatches" window is enabled
+1. Ensure the "Swatches" window is enabled<br>
     ![Enable Affinity Swatches](/media/affinity_swatches.png?raw=true "Enable Swatches window in Affinity Designer")
-1. With swatches enabled, access the swatches panel.  NOTE: Your display could be configured completely differently than mine, finding the swatches panel is beyond the scope of this document.
+1. With swatches enabled, access the swatches panel.  NOTE: Your display could be configured completely differently than mine, finding the swatches panel is beyond the scope of this document.<br>
     ![Access Swatches](/media/affinity_find_swatches.png?raw=true "Access Swatches panel")
-1. In the swatches panel, drop down the 'hamburger menu' in the top right and select "Import Palette".
+1. In the swatches panel, drop down the 'hamburger menu' in the top right and select "Import Palette".<br>
     ![Import Palette](/media/affinity_import_palette.png?raw=true "Import Palette in Affinity Designer")
-1. In the Swatches Panel, use the Palette dropdown to access the newly imported palette
+1. In the Swatches Panel, use the Palette dropdown to access the newly imported palette<br>
     ![New Palette](/media/affinity_new_palette.png?raw=true "New Palette in Affinity Designer")
 1. Using colors from this palette in Affinity will import objects into Lightburn in the corresponding layers!
 
