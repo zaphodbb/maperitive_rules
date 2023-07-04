@@ -41,6 +41,8 @@ Affinity Palette file (Designer and Photo) that maps to layers in Lightburn upon
 NOTE: The last two colors in the palette match the "tool layers" in Lightburn.  These colors are not honored during import in the current versions of Lightburn and therefore, anything using these colors in Affinity will be mapped to the "Nearest valid color" layer in Lightburn.
 
 ## Reference
+* [Maperitive Website](http://maperitive.net) Source of Maperitive program
+* [Affinity Designer Website](https://affinity.serif.com) Source of Affinity products
 * [Lightburn Layer Color Codes](LightBurn_Layer_colors.md) for importing SVG into Lightburn later
 * [Video](https://youtu.be/5GSa7g4568M) of using the rules in this repo
 
