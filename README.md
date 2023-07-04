@@ -15,15 +15,16 @@ Repo containing maperitive mrules files for displaying OpenStreetmaps data diffe
   1. `<Rule Alias Name>` should be replaced with the alias you want to appear in the rules list in Maperitive
   1. `<index number>` is optional and should be replaced with an integer indicating where you want the alias to appear in the rule list
 
-# Rules
+# Rule Sets
 ## Laser.mrules
 * Only display roads, water, railroads, trails, etc
 * No parks, buildings, etc
-* include road names
+* include road names (depending upon Maperitive zoom level at time of export)
 
 ## LaserNoTrails.mrules
 * same as Laser but do not include trails
 
+# Other Files
 ## LightBurnLayers.afpalette
 Affinity Palette file (Designer and Photo) that maps to layers in Lightburn upon import.  To import the pallette into Affinity Designer or Photo:
 1. Open Affinity Designer
@@ -39,11 +40,12 @@ Affinity Palette file (Designer and Photo) that maps to layers in Lightburn upon
 
 NOTE: The last two colors in the palette match the "tool layers" in Lightburn.  These colors are not honored during import in the current versions of Lightburn and therefore, anything using these colors in Affinity will be mapped to the "Nearest valid color" layer in Lightburn.
 
+## Reference
+[Lightburn Layer Color Codes](LightBurn_Layer_colors.md) for importing SVG into Lightburn later
+[Video](https://youtu.be/5GSa7g4568M) of using the rules in this repo
+
 ## Changelog
 * Dropped LaserNoText.mrules, text is always on a different layer so easily removed in Affinity/Illustrator/Inkscape
 * Improved River/Stream handling to provide shape outlines of Rivers and Streams instead of just the main line
 * Added Affinity Palette file for Lightburn Layers
 
-## Reference
-[Lightburn Layer Color Codes](LightBurn_Layer_colors.md) for importing SVG into Lightburn later
-[Video](https://youtu.be/5GSa7g4568M) of using the rules in this repo
