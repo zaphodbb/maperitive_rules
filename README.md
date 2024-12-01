@@ -1,5 +1,8 @@
-# maperitive_rules
-Repo containing maperitive mrules files for displaying OpenStreetmaps data differently for various applications
+# CHANGELOG/NOTES:
+2024.12.01 - Adding additional rulesets and a utility program for cleaning up/simplifying the workflow significantly.  I'm working on reducing the number of points in each path within the resulting SVG because OSM data can get a crazy number of points, which we don't necessarily need.  I'll update the README with details on the simplify utility and the additional rulesets as soon as I have the point reduction code ready for release 1.
+
+# Maperitive Rules
+Repo containing maperitive mrules files for displaying OpenStreetmaps data in Maperitive differently for various applications.  This repor is primarily focused on optimising OSM data exported from Maperitive into cleaner, simpler SVG files that are suitable for import into graphics programs like Affinity Designer for use in laser cutting and engraving.
 
 # Requirements
 * Working installation of maperitive (Free Software from maperitive.net)

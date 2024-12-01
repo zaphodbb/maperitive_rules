@@ -1,0 +1,424 @@
+#!/usr/bin/env python3
+####################################################################################################
+# Using Decimal because floating point math sucks
+####################################################################################################
+import os
+import sys
+import argparse
+import logging
+import simplejson as json
+from decimal import *
+from xml.dom import minidom
+
+# Define parent layers we want to merge / carry over and Layer name in new doc
+# "Maperitive Layer Name": "New Doc Layer Name"
+# These are reverse order of what appears in svg (bottom to top)
+mthreshold = 0.2
+
+# Top level Items we're interested in
+tlobjs = ["Landmass", # Islands, etc
+          "Polygons", # Bodies of water, Nature reserves
+          "Line artwork", # Roads, Streams, Rivers, Rail, Contours
+          "Layer 799", # Street names
+          "Labels", # Park/water labels
+         ]
+
+# Define order of line groups to go into new document
+layer_order = ["railway rail",
+               "railway lightrail",
+               "highway motorway",
+               "highway trunk",
+               "highway primary",
+               "highway secondary",
+               "highway tertiary",
+               "highway unclassified",
+               "highway residential",
+               "highway living_street",
+               "highway service",
+               "highway pedestrian",
+               "highway track",
+               "highway footway",
+               "highway cycleway",
+               "river",
+               "stream",
+               "coastline",
+               "contour major (contours)",
+               "contour minor (contours)",
+               "contour major (contours) (labels)",
+               "contour minor (contours) (labels)"
+              ]
+
+def create_svg(width,height,title="No Title",desc="No Description"):
+    doc = minidom.Document()
+    # Define SVG object
+    svg = doc.createElement('svg')
+    svg.setAttribute("xmlns:xlink","http://www.w3.org/1999/xlink")
+    svg.setAttribute("version","1.1")
+    svg.setAttribute("xml:space","preserve")
+    svg.setAttribute("xmlns:inkscape","http://www.inkscape.org/namespaces/inkscape")
+    svg.setAttribute("x","0")
+    svg.setAttribute("y","0")
+    svg.setAttribute("width",width)
+    svg.setAttribute("height",height)
+    svg.setAttribute("clip-path","url(#MapClipRectangle)")
+    svg.setAttribute("style","overflow:hidden;text-rendering:optimizeLegibility")
+    svg.setAttribute("xmlns","http://www.w3.org/2000/svg")
+    # Add Title
+    titleobj = doc.createElement('title')
+    titleobj.appendChild(doc.createTextNode(title))
+    svg.appendChild(titleobj)
+
+    # Add Description
+    descobj = doc.createElement('description')
+    descobj.appendChild(doc.createTextNode(desc))
+    svg.appendChild(descobj)
+
+    # Add defs and clipPath
+    defs = doc.createElement('defs')
+    clip = doc.createElement('clipPath')
+    rect = doc.createElement('rect')
+    rect.setAttribute("x","0")
+    rect.setAttribute("y","0")
+    rect.setAttribute("width","{}".format(width))
+    rect.setAttribute("height","{}".format(height))
+    clip.appendChild(rect)
+    defs.appendChild(clip)
+    svg.appendChild(defs)
+
+    doc.appendChild(svg)
+
+    return doc
+
+def get_child_groups_by_lbl(parent,label):
+    groups = []
+    for node in parent.childNodes:
+        if node.nodeName != "g":
+            continue
+        lbl = node.getAttribute('inkscape:label')
+        if lbl == label:
+            groups.append(node)
+    return groups
+
+def add_child(parent,ndoc,nsvg,osvg,type,simplify=False):
+    odefs = osvg.getElementsByTagName('defs')[0]
+    add_path = False
+    pathstr = ""
+    npid = ""
+    npstyle = ""
+    npilbl = ""
+    for node in parent.childNodes:
+        if node.nodeName != "g":
+            # We're only interested in groups in the parent of the old doc
+            continue
+        lbl = node.getAttribute('inkscape:label')
+        if lbl != type:
+            continue
+        if lbl.lower().startswith('contour'):
+            logging.debug("Adding contour labels {}".format(lbl))
+            nsvg.appendChild(ndoc.importNode(node,True))
+        else:
+            # This is not a contour related object, get xlink, find symbol, merge paths
+            useobj = node.getElementsByTagName('use')
+            if not useobj:
+                continue
+            logging.debug("Adding line {}".format(lbl))
+            symbolid = useobj.pop().getAttribute('xlink:href').replace("#","")
+            add_path = True
+            npid = node.getAttribute('id')
+            npstyle = "{};{}".format(node.getAttribute('style'),"fill:none")
+            npilbl = node.getAttribute('inkscape:label')
+            paths = []
+            for sym in odefs.getElementsByTagName('symbol'):
+                sid = sym.getAttribute("id")
+                if sid == symbolid:
+                    logging.debug("Adding symbol {}".format(sid))
+                    for pth in sym.getElementsByTagName('path'):
+                        pdata = pth.getAttribute('d')
+                        if simplify:
+                            pdata = simplify_path(pdata)
+                        pinfo = calc_start_end(pdata)
+                        pinfo["data"] = pdata
+                        paths.append(pinfo)
+            paths = remove_duplicate_paths(paths)
+            paths = merge_paths(paths)
+            for path in paths:
+                pathstr = "{}{}".format(pathstr,path['data'])
+    if add_path:
+        npth = ndoc.createElement('path') # New Parent Group
+        npth.setAttribute("id",npid)
+        npth.setAttribute("style",npstyle)
+        npth.setAttribute("inkscape:label",npilbl)
+        npth.setAttribute('d',pathstr)
+        nsvg.appendChild(npth)
+
+    return nsvg
+
+#def copy_merged_symbol(odefs,ndefs,ndoc,symbols):
+#    nsym = False
+#    for symbol in symbols:
+#        for sym in odefs.getElementsByTagName('symbol'):
+#            sid = sym.getAttribute("id")
+#            if sid == symbol:
+#                if nsym:
+#                    for pth in sym.getElementsByTagName('path'):
+#                        npth = ndoc.createElement('path')
+#                        npth.setAttribute('d',pth.getAttribute('d'))
+#                        nsym.appendChild(pth)
+#                else:
+#                    nsym = ndoc.createElement('symbol')
+#                    nsym.setAttribute("id",sym.getAttribute("id"))
+#                    nsym.setAttribute("style",sym.getAttribute("style"))
+#                    for pth in sym.getElementsByTagName('path'):
+#                        npth = ndoc.createElement('path')
+#                        npth.setAttribute('d',pth.getAttribute('d'))
+#                        nsym.appendChild(pth)
+#    ndefs.appendChild(nsym)
+#    return nsym.getAttribute("id")
+
+#def add_line_group(ndoc,npg,odefs,id,lbl,symbols,style):
+#    ngrp = ndoc.createElement('g')
+#    ngrp.setAttribute("id",id)
+#    ngrp.setAttribute("style",style)
+#    ngrp.setAttribute("inkscape:groupmode","layer")
+#    ngrp.setAttribute("inkscape:label",lbl)
+#    for symbol in symbols:
+#        for sym in odefs.getElementsByTagName('symbol'):
+#            sid = sym.getAttribute("id")
+#            if sid == symbol:
+#                for pth in sym.getElementsByTagName('path'):
+#                    npth = ndoc.createElement('path')
+#                    # Data
+#                    npth.setAttribute('d',pth.getAttribute('d'))
+#                    ngrp.appendChild(pth)
+#    npg.appendChild(ngrp)
+
+def calc_start_end(data):
+    retval = {"startx": 0,
+              "starty": 0,
+              "endx": 0,
+              "endy": 0,
+              "start": "",
+              "end": ""
+             }
+
+    parts = data.split(" ")
+    cx = Decimal(0.0)
+    cy = Decimal(0.0)
+    cop = "M"
+    val = parts.pop(0)
+    while(val):
+        if val.startswith("M"):
+            #Move To
+            retval["startx"] = val.replace("M","")
+            cx = Decimal(retval["startx"])
+            retval["starty"] = parts.pop(0)
+            cy = Decimal(retval["starty"])
+            cop = "M"
+        elif  val.startswith("l"):
+            cx = cx + Decimal(val.replace('l',''))
+            cy = cy + Decimal(parts.pop(0))
+            cop = "l"
+        elif  val.startswith("h"):
+            cx = cx + Decimal(val.replace('h',''))
+            cop = "h"
+        elif  val.startswith("v"):
+            cy = cy + Decimal(val.replace('v',''))
+            cop = "v"
+        elif val[0].isalpha():
+            print("\n\n############ {} ################".format(val))
+        else:
+            if cop == "l":
+                cx = cx + Decimal(val)
+                cy = cy + Decimal(parts.pop(0))
+        if len(parts) >= 1:
+            val = parts.pop(0)
+        else:
+            val = False
+
+    retval["endx"] = str(cx)
+    retval["endy"] = str(cy)
+    retval["start"] = "{} {}".format(retval["startx"],retval["starty"])
+    retval["end"] = "{} {}".format(retval["endx"],retval["endy"])
+    return retval
+
+    ############################## Operations #######################
+    #Mm = moveto
+    #Ll = lineto
+    #Hh = horizontal lineto
+    #Vv = vertical lineto
+    #Cc = curveto
+    #Ss = smooth curve to
+    #Qq = quadratic Bézier curve
+    #Tt = smooth quadratic Bézier curveto
+    #Aa = elliptical Arc
+    #Zz = closepath
+
+def simplify_path(pdata):
+    # Initial pass, just keep start and end, remove every other point
+
+def merge_paths(paths):
+    # Merge paths where the start/end are within <mthreshold (0.2)> pixels X and Y.
+    # This is an iterative process because merging paths will throw off the index into
+    # the path list.  As a result, loop over list, merge first match, restart loop,
+    # repeat until no matches found, return optimized path list
+    logging.info("Merging {} paths".format(len(paths)))
+    clean = False
+    iteration = 0
+    spaths = len(paths)
+    while not clean:
+        iteration += 1
+        clean = True
+        for idx,path in enumerate(paths):
+            # Get start and end of a path in the list
+            #start = path["start"]
+            #end = path["end"]
+            startx = Decimal(path["startx"])
+            starty = Decimal(path["starty"])
+            endx = Decimal(path["endx"])
+            endy = Decimal(path["endy"])
+
+            for cidx,cpath in enumerate(paths):
+                if idx == cidx:
+                    # Skip, this is the path we're processing as idx
+                    continue
+
+                # Now, loop through the list and look for starts/ends that are close
+                # The path we are currently processing in the outer loop (idx)
+                # Get start/end values for current point
+                csx = Decimal(cpath["startx"])
+                csy = Decimal(cpath["starty"])
+                cex = Decimal(cpath["endx"])
+                cey = Decimal(cpath["endy"])
+
+                # Get the absolute difference of the starts/ends
+                sexdiff = abs(csx - endx) # Start to End X difference
+                seydiff = abs(csy - endy) # Start to End Y difference
+                esxdiff = abs(cex - startx) # End to Start X Difference
+                esydiff = abs(cey - starty) # End to Start Y Difference
+
+                # Check closeness of points and merge if needed
+                if sexdiff < mthreshold and seydiff < mthreshold:
+                    # Check start of current path vs end of outer path
+                    # Current path's start ~= outer loop path's end, add cpath onto path
+                    clean = False
+                    logging.debug("  Adding {} onto {}, keeping {}".format(cidx,idx,idx))
+                    kdat = paths[idx]["data"]
+                    ddat = paths[cidx]["data"]
+                    logging.debug("    {}".format(json.dumps(kdat,indent=2)))
+                    logging.debug("    {}".format(json.dumps(ddat,indent=2)))
+                    dlist = ddat.split(" ")
+                    kdat = "{} {}".format(kdat," ".join(dlist[2:]))
+                    kinfo = calc_start_end(kdat)
+                    kinfo["data"] = kdat
+                    paths[idx] = kinfo
+                    logging.debug("   RESULT: {}\n\n".format(json.dumps(kinfo,indent=2)))
+                    # Paths merged and path updated, remove current path
+                    paths.pop(cidx)
+                    # Process complete, break and restart loop
+                    break
+                elif esxdiff < mthreshold and esydiff < mthreshold:
+                    # Check end of current path vs start of outer path
+                    # Current path's end != outer loop path's start, add outer path onto current path
+                    clean = False
+                    logging.debug("  Adding {} onto {}, keeping {}".format(idx,cidx,cidx))
+                    kdat = paths[cidx]["data"]
+                    ddat = paths[idx]["data"]
+                    logging.debug("    {}".format(json.dumps(kdat,indent=2)))
+                    logging.debug("    {}".format(json.dumps(ddat,indent=2)))
+                    dlist = ddat.split(" ")
+                    kdat = "{} {}".format(kdat," ".join(dlist[2:]))
+                    kinfo = calc_start_end(kdat)
+                    kinfo["data"] = kdat
+                    paths[cidx] = kinfo
+                    logging.debug("   RESULT: {}".format(json.dumps(kinfo,indent=2)))
+                    # Paths merged and cpath updated, remove outer path
+                    paths.pop(idx)
+                    # Process complete, break and restart loop
+                    break
+            if not clean:
+                # We merged something, break and start over
+                break
+
+    # We went through the loop with no matches, merging is complete
+    logging.info("Merged {} paths ({} -> {})".format(iteration-1,spaths,len(paths)))
+    return paths
+
+def remove_duplicate_paths(paths):
+    logging.info("Removing duplicate paths")
+    clean = False
+    spaths = len(paths)
+    iteration = 0
+    while not clean:
+        clean = True
+        iteration += 1
+        if iteration % 1000 == 0:
+            logging.info(" iteration {}".format(iteration))
+        matches = []
+        for idx,path in enumerate(paths):
+            if idx > 0 and idx % 1000 == 0:
+                logging.info("  idx = {}".format(idx))
+            for cidx,cpath in enumerate(paths):
+                if cidx == idx:
+                    continue
+                if cpath["data"] == path["data"]:
+                    print(" remove {}".format(cidx))
+                    clean = False
+                    matches.append(cidx)
+        print("iteration {}, removing {} dupes".format(iteration,len(matches)))
+        for idx in matches:
+            paths.pop(idx)
+    logging.info("Removed {} duplicates".format(spaths - len(paths)))
+    return paths
+
+def main(args):
+    odoc = minidom.parse(args.file)
+    osvg = odoc.getElementsByTagName('svg')[0]
+    width = osvg.getAttribute('width')
+    height = osvg.getAttribute('height')
+    logging.info("Creating new {} X {} svg".format(width,height))
+    ndoc = create_svg(width,height,title="Converted from Maperitive using svgtool",desc="OpenStreetMap data for laser processing")
+    nsvg = ndoc.getElementsByTagName('svg')[0]
+    #odefs = odoc.getElementsByTagName('defs')[0]
+    #ndefs = ndoc.getElementsByTagName('defs')[0]
+
+    for tlname in tlobjs:
+        # Get labelled chidren from the SVG, these are top level objects
+        try:
+            parent = get_child_groups_by_lbl(osvg,tlname)[0]
+        except:
+            continue
+
+        if tlname != "Line artwork":
+           logging.info("Importing non-lineart layer {}".format(parent.getAttribute('id')))
+           nsvg.appendChild(ndoc.importNode(parent,True))
+           continue
+
+        # add child objects from the parent, removing groups and merging paths, by label (Line Artwork)
+        for type in reversed(layer_order):
+            nsvg = add_child(parent,ndoc,nsvg,osvg,type,simplify=args.simplify)
+
+    if args.output != "no":
+        with open(args.output,"w") as fh:
+            ndoc.writexml(fh,newl=os.linesep,encoding="utf-8")
+
+    odoc.unlink()
+    ndoc.unlink()
+
+if __name__ == "__main__":
+    actions = ["merge"
+              ]
+    parser = argparse.ArgumentParser(description="Convert Maperitive SVG")
+    parser.add_argument("action",nargs="?",default="merge",help="What action to take")
+    parser.add_argument("-d","--debug",action="store_true",help="Enable Debug")
+    parser.add_argument("-s","--simplify",action="store_true",help="Reduce points in paths")
+    parser.add_argument("-f","--file",nargs="?",default="test.svg",help="File to process")
+    parser.add_argument("-o","--output",nargs="?",default="no",help="New SVG filename to generate")
+
+    args = parser.parse_args()
+
+    if args.debug:
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+    main(args)
+

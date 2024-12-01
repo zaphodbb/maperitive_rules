@@ -10,7 +10,7 @@ features
 	    // Water lines
 		coastline : natural=coastline
 		river : waterway=river
-		stream : waterway=stream
+		//stream : waterway=stream
 		canal : waterway=canal
 		drain : waterway=drain
 		dock : waterway=dock
@@ -25,21 +25,21 @@ features
 		highway trunk link: highway=trunk_link OR (highway=construction AND construction=trunk_link)
 		highway primary link : highway=primary_link OR (highway=construction AND construction=primary_link)
 		highway primary : highway=primary OR (highway=construction AND construction=primary)
-		highway secondary : highway=secondary OR (highway=construction AND construction=secondary)
-		highway tertiary : highway=tertiary OR (highway=construction AND construction=tertiary)
-		highway unclassified : highway=unclassified OR (highway=construction AND construction=unclassified)
-		highway residential : highway=residential OR (highway=construction AND construction=residential)
-		highway living_street : highway=living_street OR (highway=construction AND construction=living_street)
-		highway construction : highway=construction
-		highway service : highway=service OR highway=track
-		highway access destination : access=destination AND highway
+		//highway secondary : highway=secondary OR (highway=construction AND construction=secondary)
+		//highway tertiary : highway=tertiary OR (highway=construction AND construction=tertiary)
+		//highway unclassified : highway=unclassified OR (highway=construction AND construction=unclassified)
+		//highway residential : highway=residential OR (highway=construction AND construction=residential)
+		//highway living_street : highway=living_street OR (highway=construction AND construction=living_street)
+		//highway construction : highway=construction
+		//highway service : highway=service OR highway=track
+		//highway access destination : access=destination AND highway
 		
 		// Paths
-		cycleway : highway=cycleway
-		bridge foot : bridge=yes AND (foot=yes OR highway=footway)
-		foot path major : @isOneOf(highway,pedestrian,footway,path,steps) AND (NOT trail_visibility OR @isOneOf(trail_visibility, excellent, good))
-		foot path minor : @isOneOf(highway,pedestrian,footway,path,steps) AND (trail_visibility AND NOT @isOneOf(trail_visibility, excellent, good))
-		foot path other : highway=path
+		//cycleway : highway=cycleway
+		//bridge foot : bridge=yes AND (foot=yes OR highway=footway)
+		//foot path major : @isOneOf(highway,pedestrian,footway,path,steps) AND (NOT trail_visibility OR @isOneOf(trail_visibility, excellent, good))
+		//foot path minor : @isOneOf(highway,pedestrian,footway,path,steps) AND (trail_visibility AND NOT @isOneOf(trail_visibility, excellent, good))
+		//foot path other : highway=path
         // Runways
 		aeroway runway : aeroway=runway
 		aeroway taxiway : aeroway=taxiway

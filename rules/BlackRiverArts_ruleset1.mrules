@@ -1,0 +1,341 @@
+features
+    // Draw water areas (IE: large river banks and lakes)
+	areas
+		water : natural=water OR waterway=riverbank OR landuse=reservoir OR landuse=basin or waterway=dock
+		// campsite: tourism=camp_site
+
+    //Draw these lines
+	lines
+	    // Water lines
+		coastline : natural=coastline
+		river : waterway=river
+		stream : waterway=stream
+		canal : waterway=canal
+		drain : waterway=drain
+		dock : waterway=dock
+		pier : man_made=pier
+		// Railroads
+		railway rail : railway=rail
+		railway lightrail : railway=light_rail
+		// Roads/Streets
+		highway motorway : highway=motorway OR (highway=construction AND construction=motorway)
+		highway motorway link : highway=motorway_link OR (highway=construction AND construction=motorway_link)
+		highway trunk : highway=trunk OR (highway=construction AND construction=trunk)
+		highway trunk link: highway=trunk_link OR (highway=construction AND construction=trunk_link)
+		highway primary link : highway=primary_link OR (highway=construction AND construction=primary_link)
+		highway primary : highway=primary OR (highway=construction AND construction=primary)
+		highway secondary : highway=secondary OR (highway=construction AND construction=secondary)
+		highway tertiary : highway=tertiary OR (highway=construction AND construction=tertiary)
+		highway unclassified : highway=unclassified OR (highway=construction AND construction=unclassified)
+		highway residential : highway=residential OR (highway=construction AND construction=residential)
+		highway living_street : highway=living_street OR (highway=construction AND construction=living_street)
+		highway construction : highway=construction
+		highway service : highway=service
+		highway access destination : access=destination AND highway
+		
+		// Paths
+		// cycleway : highway=cycleway
+		// bridge foot : bridge=yes AND (foot=yes OR highway=footway)
+		// foot path major : @isOneOf(highway,pedestrian,footway,path,steps) AND (NOT trail_visibility OR @isOneOf(trail_visibility, excellent, good))
+		// foot path minor : @isOneOf(highway,pedestrian,footway,path,steps) AND (trail_visibility AND NOT @isOneOf(trail_visibility, excellent, good))
+		// foot path other : highway=path
+        // Runways
+		aeroway runway : aeroway=runway
+		aeroway taxiway : aeroway=taxiway
+
+
+properties
+	map-background-color	: #ffffff
+	map-background-opacity	: 1
+	map-sea-color : #0000FF
+	font-weight : bold
+	font-family : Verdana
+	text-max-width : 7
+	text-halo-width : 25%
+	text-halo-opacity : 0.75
+	text-align-horizontal : center
+	text-align-vertical : center
+	font-stretch : 0.9
+	map.rendering.lflp.min-buffer-space : 5
+	map.rendering.lflp.max-allowed-corner-angle : 40
+
+rules
+    // cycleway (rail to trail, etc) become layer 5 in Lightburn
+	target : cycleway*
+		define
+			min-zoom : 13
+			line-color : #FF8000
+			line-width : 13:2;15:2.5;18:3
+			line-style : dot
+			border-style : none
+			border-color : white
+			border-width : 100%
+			border-opacity : 0.3
+		for : tunnel=yes
+			define
+				border-style : none
+		for : bridge=yes
+			define
+				border-color : #000
+				border-opacity : 1
+		draw : line
+		draw : text
+
+
+	target : bridge foot
+	    // foot bridge goes to layer 4 in lightburn
+		define
+			min-zoom : 13
+			line-color : #D0D000
+			line-width : 7:0.6;9:1;10:1.2;12:2.5;13:3;16:5;18:6
+			border-style : solid
+			border-color : #FEFEB2 black 20%
+			border-width : 15%
+		draw : line
+		draw : text
+
+	target : foot path*
+	    // foot paths also go to layer 4 in lightburn
+		define
+			line-color : #D0D000
+			line-style : dash
+			border-style : none
+		if : *major
+			define
+				min-zoom : 14.5
+				line-width : 14.5:1;15.5:2
+		else
+			define
+				min-zoom : 15
+				line-width : 1
+		draw : line
+		draw : text
+		
+	// Draw water areas as blue (Layer 3 in Lightburn)
+	target : $featuretype(area)
+		define
+			line-style : solid
+			line-width : 1
+		if : water
+			define
+				fill-color : #0000FF
+				line-color : #0000FF
+				line-style : solid
+		elseif: campsite
+			define
+				fill-color : #FFFF00
+				line-color : #FFFF00
+				line-style : solid
+		else
+			stop
+		draw : fill
+		draw : text
+
+    // Rail stuff is heavy dashed Layer 6 in Lightburn
+	target : railway rail
+		define
+			min-zoom : 9
+			line-style : dash
+			line-color : #00E0E0
+			line-width : 9:3;11:4;13:5;15:6
+			border-style : none
+		draw : line
+		stop
+
+    // Highways are Black / layer1 in Lightburn
+	target : highway*
+		define
+			font-size : 15:7;18:10
+			font-weight : bold
+			line-style : solid
+			line-join : round
+			line-start-cap : round
+			line-end-cap : round
+
+		if : *access*
+			define
+				min-zoom : 12
+				line-width : 13:1;15:2;18:4
+				line-style : dash
+				line-color : #000000
+			for : bridge=yes
+				define
+					border-color : #000000
+					border-style : solid
+					border-width : 50%
+			draw : line
+			stop
+		if : *motorway*
+			define
+				line-width : 7:1;9:2;12:3;13:7;16:10;18:12
+				min-zoom : 7
+				max-zoom : 20
+				line-color : #000000
+			for : bridge=yes
+				define
+					border-color : #000000
+					border-style : solid
+					border-width : 50%
+			draw : line
+			stop
+		elseif : *trunk*
+			define
+				min-zoom : 12
+				line-color : #000000
+				line-width : 12:1;13:2;15:10;18:12
+			for : bridge=yes
+				define
+					border-color : #000000
+					border-style : solid
+					border-width : 50%
+			draw : line
+		elseif : *primary*
+			define
+				min-zoom : 9
+				line-color : #000000
+				line-width : 9:1;11:2;12:2;15:10;18:12
+			for : tunnel=yes
+				define
+					line-style : dot
+			for : bridge=yes
+				define
+					border-color : #000000
+					border-style : solid
+					border-width : 50%
+			draw : line
+			stop
+		elseif : *secondary
+			define
+				min-zoom : 12
+				line-color : #000000
+				line-width : 10:1;11:2;13:2;15:10;18:12
+			for : tunnel=yes
+				define
+					line-style : dot
+			for : bridge=yes
+				define
+					border-color : #000000
+					border-style : solid
+					border-width : 50%
+			draw : line
+			stop
+		elseif : *tertiary
+			define
+				min-zoom : 12
+				line-color : #000000
+				line-width : 13:2;15:10;18:12
+			for : tunnel=yes
+				define
+					line-style : dot
+			for : bridge=yes
+				define
+					border-color : #000000
+					border-style : solid
+					border-width : 50%
+			draw : line
+			stop
+		elseif : *service
+			define
+				min-zoom : 13
+				line-color : #000000
+				line-width : 13:2;15:10;18:12
+			for : tunnel=yes
+				define
+					line-style : dot
+			for : bridge=yes
+				define
+					border-color : #000000
+					border-style : solid
+					border-width : 50%
+			draw : line
+			stop
+
+		elseif : $regex("(.*residential)|(.*unclassified)")
+			define
+				min-zoom : 13
+				line-color : #000000
+				line-width : 13:2;15:10;18:12
+			for : tunnel=yes
+				define
+					line-style : dot
+			for : bridge=yes
+				define
+					border-color : #000000
+					border-style : solid
+					border-width : 50%
+			draw : line
+			stop
+		elseif : *living_street
+			define
+				min-zoom : 13
+				line-color : #000000
+				line-width : 12:1;13:1.5;15:6;18:15
+			for : tunnel=yes
+				define
+					border-style : dot
+			for : bridge=yes
+				define
+					border-color : #000
+			draw : line
+			stop
+		else
+			stop
+
+    // Rivers and streams are blue
+	target : river
+		define
+			line-color : #0000FF
+			line-width : 7:1;12:2;14:5
+		draw : line
+		define
+			min-zoom:13
+			font-size:13:12;16:16
+			text-color:#B5D0D0
+			font-weight:normal
+		draw:text
+
+	target : stream
+		define
+			line-color : #0000FF
+			line-width : 13:1;15:2
+		draw : line
+		define
+			min-zoom:13
+			font-size:13:8;16:12
+			text-color:#B5D0D0
+			font-weight:normal
+		draw:text
+
+	target : canal
+		define
+			min-zoom : 12
+			line-color : #B5D0D0
+			line-width : 12:1;17:8
+		draw : line
+		define
+			min-zoom:13
+			font-size:13:8;16:12
+			text-color:#B5D0D0
+			font-weight:normal
+		draw:text
+
+	target: railway station
+		define
+			min-zoom : 12
+			shape : square
+			line-color : #7981B0
+			fill-color : #7981B0
+			shape-size : 12:5;18:8
+		draw : shape
+		define
+			min-zoom : 14
+			font-size : 12
+			text-color : #7981B0
+			text-offset-vertical : -150%
+		draw : text
+
+	target: coastline
+		define
+			line-color : #B5D0D0
+			line-width : 2
+		draw : line
